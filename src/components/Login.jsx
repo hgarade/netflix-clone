@@ -1,8 +1,23 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import LOGIN_BG from "./../assets/login-bg.jpg";
+import { validateForm } from "../utils/formValidation";
 
 const Login = () => {
   const [isSignInFlow, setIsSignInFlow] = useState(true);
+  const [validationMsg, setValidationMsg] = useState(null);
+
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const nameRef = useRef(null);
+
+  const handleSubmitBtn = () => {
+    const errorMessages = validateForm(
+      emailRef.current.value,
+      passwordRef.current.value,
+      nameRef?.current?.value
+    );
+    setValidationMsg(errorMessages);
+  };
 
   const toggleSignIn = () => {
     setIsSignInFlow(!isSignInFlow);
@@ -15,28 +30,43 @@ const Login = () => {
         src={LOGIN_BG}
         alt="background"
       />
-      <form className="p-12 my-36 mx-auto right-0 left-0 absolute rounded-lg text-white w-4/12 bg-black bg-opacity-70">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="p-12 my-36 mx-auto right-0 left-0 absolute rounded-lg text-white w-4/12 bg-black bg-opacity-70"
+      >
         <h1 className="font-bold my-4 text-3xl">
           {!isSignInFlow ? "Sign In" : "Sign Up"}
         </h1>
         {isSignInFlow && (
-          <input
-            className="p-4 my-4 w-full rounded-md bg-transparent border"
-            type="text"
-            placeholder="Full Name"
-          />
+          <>
+            <input
+              ref={nameRef}
+              className="p-4 my-4 w-full rounded-md bg-transparent border"
+              type="text"
+              placeholder="Full Name"
+            />
+            <p className="text-red-600">{validationMsg?.nameInvalidMsg}</p>
+          </>
         )}
         <input
+          ref={emailRef}
           className="p-4 my-4 w-full rounded-md bg-transparent border"
           type="text"
           placeholder="Email or Mobile Number"
         />
+        <p className="text-red-600">{validationMsg?.emailInvalidMsg}</p>
+
         <input
+          ref={passwordRef}
           className="p-4 my-4 w-full rounded-md bg-transparent border"
           type="password"
           placeholder="Password"
         />
-        <button className="bg-red-700 my-4 rounded-lg p-2 w-full">
+        <p className="text-red-600">{validationMsg?.passwordInvalidMsg}</p>
+        <button
+          onClick={handleSubmitBtn}
+          className="bg-red-700 my-4 rounded-lg p-2 w-full"
+        >
           {!isSignInFlow ? "Sign In" : "Sign Up"}
         </button>
 
