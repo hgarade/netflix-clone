@@ -2,15 +2,21 @@ import React, { useRef, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import LOGIN_BG from "./../assets/login-bg.jpg";
 import { validateForm } from "../utils/formValidation";
 import { auth } from "../utils/firebase.config";
+import { addUser } from "../store/slices/userSlice";
 
 const Login = () => {
   const [isSignInFlow, setIsSignInFlow] = useState(false);
   const [validationMsg, setValidationMsg] = useState(null);
-
+  const [user, setUser] = useState(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const nameRef = useRef(null);
@@ -35,14 +41,9 @@ const Login = () => {
         passwordRef.current.value
       )
         .then((userCredential) => {
-          const user = userCredential.user;
-          console.log(user);
+          updateUserProfile(userCredential.user);
         })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          console.log(error);
-        });
+        .catch((error) => {});
     } else {
       signInWithEmailAndPassword(
         auth,
@@ -50,17 +51,35 @@ const Login = () => {
         passwordRef.current.value
       )
         .then((userCredential) => {
-          const user = userCredential.user;
-          console.log(user);
+          setUserDataToStoreAndNavigate(userCredential.user);
         })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          console.log(error);
-        });
+        .catch((error) => {});
     }
   };
 
+  const setUserDataToStoreAndNavigate = (user) => {
+    const { email, displayName, photoURL, phoneNumber } = user;
+    console.log(user);
+    dispatch(
+      addUser({
+        email: email,
+        name: displayName,
+        url: photoURL,
+        number: phoneNumber,
+      })
+    );
+    navigate("/browse");
+  };
+
+  const updateUserProfile = (userCredential) => {
+    updateProfile(userCredential, {
+      displayName: nameRef.current.value,
+      photoURL:
+        "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png",
+    }).then(() => {
+      setUserDataToStoreAndNavigate(auth.currentUser);
+    });
+  };
   const toggleSignIn = () => {
     setIsSignInFlow(!isSignInFlow);
   };
